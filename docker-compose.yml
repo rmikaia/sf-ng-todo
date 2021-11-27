@@ -1,20 +1,40 @@
 version: '3'
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
+  sf_todo_nginx:
+    container_name: sf_todo_nginx
+    image: nginx:stable-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ".docker/nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - "./:/var/www/sf-todo/"
+    depends_on:
+      - sf_todo_db
+      - sf_todo_fpm
+  sf_todo_fpm:
+    container_name: sf_todo_fpm
+    build:
+      context: .docker/php-fpm
+    env_file:
+      - .env.local
+    ports:
+      - "9000:9000"
+    volumes:
+      - "./:/var/www/sf-todo"
+    depends_on:
+      - sf_todo_db
+  sf_todo_db:
+    container_name: sf_todo_db
     image: postgres:${POSTGRES_VERSION:-13}-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-sfngtodo}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test}
-      POSTGRES_USER: ${POSTGRES_USER:-test}
+      POSTGRES_DB: sftodo
+      POSTGRES_USER: guest
+      POSTGRES_PASSWORD: guest
+    ports:
+      - "5433:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
-
+      - ".docker/pgsql/data:/var/lib/postgresql/data:rw"
 volumes:
 ###> doctrine/doctrine-bundle ###
   db-data:
