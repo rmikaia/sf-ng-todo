@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Symfony\Component\Serializer\Annotation\Ignore;
 use App\Repository\TodoRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -26,6 +27,13 @@ class Todo
      * @ORM\Column(type="datetime_immutable")
      */
     private $createdAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="todos")
+     * @ORM\JoinColumn(nullable=false)
+     * @Ignore()
+     */
+    private $owner;
 
     public function getId(): ?int
     {
@@ -52,6 +60,18 @@ class Todo
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): self
+    {
+        $this->owner = $owner;
 
         return $this;
     }
